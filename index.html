@@ -1,0 +1,261 @@
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a2535;--paper:#f5f7fa;--accent:#2a6e8e;--accent2:#1a4a6e;
+  --muted:#6b7a8d;--border:#dde3ea;--card:#fff;--success:#2d6a4f;--error:#c0392b;
+}
+body{font-family:'Source Sans 3',sans-serif;background:var(--paper);color:var(--ink)}
+h1,h2,h3{font-family:'Playfair Display',serif}
+#app{max-width:680px;margin:0 auto;padding:1.5rem 1rem}
+.header{text-align:center;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)}
+.header h1{font-size:26px;color:var(--ink);margin-bottom:4px}
+.header p{color:var(--muted);font-size:14px}
+.tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1.5rem}
+.tab{flex:1;padding:10px;font-size:13px;font-weight:600;background:transparent;border:none;cursor:pointer;color:var(--muted);font-family:'Source Sans 3',sans-serif;transition:all .2s}
+.tab.active{background:var(--ink);color:#fff}
+.search-bar{display:flex;gap:8px;margin-bottom:1rem}
+.search-bar input{flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;background:var(--card);font-family:'Source Sans 3',sans-serif;color:var(--ink)}
+.word-list{display:flex;flex-direction:column;gap:8px}
+.word-entry{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.word-entry:hover{border-color:var(--accent)}
+.word-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.word-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--ink)}
+.word-pos{font-size:11px;color:var(--accent);font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:#e8f4f8;padding:2px 8px;border-radius:4px}
+.word-body{padding:0 16px 14px;border-top:1px solid var(--border);display:none}
+.word-body.open{display:block}
+.definition{font-size:14px;color:var(--ink);line-height:1.7;margin-top:10px}
+.example{font-size:13px;color:var(--muted);font-style:italic;margin-top:6px;padding-left:12px;border-left:2px solid var(--border)}
+.ox-link{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--accent);margin-top:8px;text-decoration:none}
+.fc-progress{font-size:13px;color:var(--muted);text-align:center;margin-bottom:12px}
+.fc-card{perspective:800px;height:200px;margin-bottom:1.5rem;cursor:pointer}
+.fc-inner{width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d;position:relative}
+.fc-inner.flipped{transform:rotateY(180deg)}
+.fc-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;border:1px solid var(--border)}
+.fc-front{background:var(--ink);color:#fff}
+.fc-front h2{font-size:28px;color:#fff;text-align:center}
+.fc-front p{font-size:12px;color:rgba(255,255,255,.5);margin-top:8px}
+.fc-back{background:var(--card);transform:rotateY(180deg)}
+.fc-back .def{font-size:14px;color:var(--ink);text-align:center;line-height:1.7}
+.fc-back .pos{font-size:11px;color:var(--accent);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.fc-back .ex{font-size:12px;color:var(--muted);font-style:italic;margin-top:8px;text-align:center}
+.fc-nav{display:flex;gap:8px;justify-content:center}
+.fc-nav button{padding:9px 20px;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer;font-family:'Source Sans 3',sans-serif;font-size:13px;color:var(--ink)}
+.fc-nav button:hover{background:var(--border)}
+.fc-nav button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.shuffle-btn{display:block;margin:0 auto 1rem;padding:7px 16px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer;font-family:'Source Sans 3',sans-serif;color:var(--muted)}
+.quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
+.quiz-score{font-size:13px;color:var(--muted)}
+.quiz-q{background:var(--ink);color:#fff;border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem}
+.quiz-q .qtype{font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.quiz-q .qtext{font-size:15px;line-height:1.6}
+.quiz-q .qtext strong{font-family:'Playfair Display',serif;font-size:18px;color:#fff}
+.choices{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.choice{padding:11px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-size:14px;text-align:left;font-family:'Source Sans 3',sans-serif;color:var(--ink);transition:all .15s;line-height:1.5}
+.choice:hover:not(:disabled){border-color:var(--accent);background:#eaf4f8}
+.choice.correct{background:#e8f5ee;border-color:var(--success);color:var(--success)}
+.choice.wrong{background:#fdf0ee;border-color:var(--error);color:var(--error)}
+.choice:disabled{cursor:default}
+.feedback{font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:1rem}
+.feedback.correct{background:#e8f5ee;color:var(--success)}
+.feedback.wrong{background:#fdf0ee;color:var(--error)}
+.next-btn{width:100%;padding:11px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:1.5rem;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);transition:width .3s}
+.result-box{text-align:center;padding:2rem;background:var(--card);border-radius:14px;border:1px solid var(--border)}
+.result-box h2{font-size:28px;margin-bottom:8px;color:var(--ink)}
+.result-box p{color:var(--muted);font-size:14px;margin-bottom:1.5rem}
+.score-big{font-size:56px;font-weight:700;color:var(--accent);font-family:'Playfair Display',serif}
+</style>
+
+<div id="app">
+  <div class="header">
+    <h1>Insomnia Vocabulary</h1>
+    <p>28 words & phrases from the reading passage</p>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('glossary')">📖 Glossary</button>
+    <button class="tab" onclick="showTab('flashcards')">🃏 Flashcards</button>
+    <button class="tab" onclick="showTab('quiz')">✏️ Quiz</button>
+  </div>
+  <div id="glossary-tab"></div>
+  <div id="flashcards-tab" style="display:none"></div>
+  <div id="quiz-tab" style="display:none"></div>
+</div>
+
+<script>
+const WORDS = [
+  {word:"disorder",pos:"noun",def:"an illness or medical condition, especially one that affects behaviour or the mind",ex:"She was diagnosed with a sleep disorder that affected her daily life."},
+  {word:"varies",pos:"verb",def:"to be different in different situations; to change",ex:"The amount of sleep a person needs varies from person to person."},
+  {word:"menopause",pos:"noun",def:"the time when a woman gradually stops having periods, usually around the age of 50",ex:"Many women experience sleep difficulties after the menopause."},
+  {word:"widowed",pos:"adj",def:"having lost your husband or wife through death",ex:"Widowed individuals are more likely to suffer from stress-related insomnia."},
+  {word:"stroke",pos:"noun",def:"a sudden serious illness when a blood vessel in the brain bursts or is blocked, which can cause death or loss of ability to move parts of your body",ex:"Brain damage from a stroke can lead to chronic sleep problems."},
+  {word:"excessive",pos:"adj",def:"greater than what seems reasonable or appropriate; too much",ex:"Excessive use of alcohol can seriously disrupt sleeping patterns."},
+  {word:"illicit",pos:"adj",def:"not allowed by law or by social customs; illegal",ex:"The use of illicit drugs was found to be a contributing factor to his insomnia."},
+  {word:"restless",pos:"adj",def:"unable to stay still or be happy where you are, because you are bored or worried",ex:"He spent a restless night tossing and turning, unable to sleep."},
+  {word:"syndrome",pos:"noun",def:"a set of physical conditions that show you have a particular disease or medical problem",ex:"Restless legs syndrome is one of the most common causes of insomnia."},
+  {word:"lids",pos:"noun",def:"the pieces of skin that cover your eyes when they are closed; eyelids",ex:"During REM sleep, the eyes move rapidly beneath the closed lids."},
+  {word:"interludes",pos:"noun",def:"a period of time between two events during which something different happens",ex:"Short interludes of wakefulness are normal during a night's sleep."},
+  {word:"alternate",pos:"verb",def:"to happen or follow regularly one after the other",ex:"Periods of deep and light sleep alternate throughout the night."},
+  {word:"rouse",pos:"verb",def:"to wake somebody up or make somebody more active",ex:"It is very difficult to rouse someone from the deepest stages of sleep."},
+  {word:"restorative",pos:"adj",def:"making you feel better or stronger after an illness, difficulty or period of tiredness",ex:"Stages 1 and 2 of non-REM sleep are considered restorative for the body."},
+  {word:"utilising",pos:"verb",def:"to use something, especially for a practical purpose",ex:"The body repairs itself by utilising a hormone called somatostatin during sleep."},
+  {word:"categorise",pos:"verb",def:"to put people or things into groups according to what type they are; to classify",ex:"Doctors categorise insomnia according to how frequently it occurs."},
+  {word:"sleep deprivation",pos:"phrase",def:"the condition of not having enough sleep",ex:"Long-term sleep deprivation can have serious effects on mental and physical health."},
+  {word:"chronic",pos:"adj",def:"(of a disease or condition) lasting for a long time; difficult to cure or get rid of",ex:"Chronic insomnia affects a person's daily functioning for months or even years."},
+  {word:"apparent",pos:"adj",def:"easy to see or understand; obvious",ex:"There was no apparent link between her lifestyle and her sleeping difficulties."},
+  {word:"symptoms",pos:"noun",def:"changes in your body or mind that show that you are not healthy",ex:"Anxiety and depression are common symptoms that accompany secondary insomnia."},
+  {word:"hygiene",pos:"noun",def:"(in the context of sleep) habits and practices that help you sleep well",ex:"Improving your sleep hygiene, such as keeping a regular bedtime, can reduce insomnia."},
+  {word:"therapy",pos:"noun",def:"treatment for a problem, especially a physical or mental illness",ex:"Cognitive behavioural therapy is often recommended for people with chronic insomnia."},
+  {word:"severity",pos:"noun",def:"the fact or condition of something being very serious or extreme",ex:"The treatment plan depends on the cause and severity of the insomnia."},
+  {word:"transient",pos:"adj",def:"lasting for only a short time",ex:"Transient insomnia often occurs after a stressful life event and resolves on its own."},
+  {word:"intermittent",pos:"adj",def:"stopping and starting often over a period of time; not regular or steady",ex:"She suffered from intermittent insomnia that came and went over several months."},
+  {word:"underlying",pos:"adj",def:"important in a situation but not always easily noticed or stated clearly",ex:"Treating the underlying cause of insomnia is more effective than just treating the symptoms."},
+  {word:"eliminate",pos:"verb",def:"to remove or get rid of something",ex:"Tackling depression may eliminate the sleeping difficulties associated with it."},
+  {word:"irritable",pos:"adj",def:"getting annoyed easily; showing your anger",ex:"After several nights of poor sleep, he became irritable and unable to concentrate."},
+];
+
+let currentTab='glossary', fcIndex=0, fcFlipped=false;
+let fcOrder=[...Array(WORDS.length).keys()];
+let quizQuestions=[], quizIndex=0, quizScore=0, quizAnswered=false, filterText='';
+
+function showTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active',['glossary','flashcards','quiz'][i]===tab);
+  });
+  ['glossary','flashcards','quiz'].forEach(t=>{
+    document.getElementById(t+'-tab').style.display=t===tab?'block':'none';
+  });
+  if(tab==='glossary') renderGlossary();
+  if(tab==='flashcards') renderFlashcard();
+  if(tab==='quiz'){quizQuestions=buildQuiz();quizIndex=0;quizScore=0;quizAnswered=false;renderQuiz();}
+}
+
+function renderGlossary(){
+  const filtered=WORDS.filter(w=>w.word.toLowerCase().includes(filterText)||w.def.toLowerCase().includes(filterText));
+  document.getElementById('glossary-tab').innerHTML=`
+    <div class="search-bar"><input type="text" placeholder="Search words..." id="searchInput" value="${filterText}" oninput="filterSearch(this.value)"></div>
+    <div class="word-list">${filtered.map((w,i)=>`
+      <div class="word-entry" onclick="toggleEntry(${i})">
+        <div class="word-header">
+          <span class="word-title">${w.word}</span>
+          <span class="word-pos">${w.pos}</span>
+        </div>
+        <div class="word-body" id="entry-${i}">
+          <div class="definition">${w.def}</div>
+          <div class="example">"${w.ex}"</div>
+          <a class="ox-link" href="https://www.oxfordlearnersdictionaries.com/definition/english/${encodeURIComponent(w.word.split(' ')[0].toLowerCase())}" target="_blank">
+            <i class="ti ti-external-link" aria-hidden="true"></i> View in Oxford Learner's Dictionary
+          </a>
+        </div>
+      </div>`).join('')}
+    </div>`;
+}
+
+function filterSearch(val){filterText=val.toLowerCase();renderGlossary();document.getElementById('searchInput').focus();}
+function toggleEntry(i){document.getElementById('entry-'+i).classList.toggle('open');}
+
+function renderFlashcard(){
+  const w=WORDS[fcOrder[fcIndex]];
+  document.getElementById('flashcards-tab').innerHTML=`
+    <div class="fc-progress">${fcIndex+1} / ${WORDS.length}</div>
+    <button class="shuffle-btn" onclick="shuffleFC()">🔀 Shuffle</button>
+    <div class="fc-card" onclick="flipCard()">
+      <div class="fc-inner ${fcFlipped?'flipped':''}" id="fcInner">
+        <div class="fc-face fc-front">
+          <h2>${w.word}</h2>
+          <p>tap to reveal definition</p>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="pos">${w.pos}</div>
+          <div class="def">${w.def}</div>
+          <div class="ex">"${w.ex}"</div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-nav">
+      <button onclick="fcNav(-1)">← Prev</button>
+      <button class="primary" onclick="fcNav(1)">Next →</button>
+    </div>`;
+}
+
+function flipCard(){fcFlipped=!fcFlipped;document.getElementById('fcInner').classList.toggle('flipped',fcFlipped);}
+function fcNav(dir){fcIndex=(fcIndex+dir+WORDS.length)%WORDS.length;fcFlipped=false;renderFlashcard();}
+function shuffleFC(){
+  for(let i=fcOrder.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[fcOrder[i],fcOrder[j]]=[fcOrder[j],fcOrder[i]];}
+  fcIndex=0;fcFlipped=false;renderFlashcard();
+}
+
+function buildQuiz(){
+  const qs=[];
+  const shuffled=[...WORDS].sort(()=>Math.random()-.5).slice(0,15);
+  shuffled.forEach(w=>{
+    const type=Math.random()>.5?'def':'fill';
+    const wrongs=WORDS.filter(x=>x.word!==w.word).sort(()=>Math.random()-.5).slice(0,3);
+    if(type==='def'){
+      const choices=[w.def,...wrongs.map(x=>x.def)].sort(()=>Math.random()-.5);
+      qs.push({type:'def',word:w.word,correct:w.def,choices,explanation:`"${w.word}" means: ${w.def}`});
+    } else {
+      const key=w.word.split(' ')[0];
+      const sentence=w.ex.replace(new RegExp(key,'i'),'_____');
+      const choices=[w.word,...wrongs.map(x=>x.word)].sort(()=>Math.random()-.5);
+      qs.push({type:'fill',word:w.word,sentence,correct:w.word,choices,explanation:`The answer is "${w.word}" — ${w.def}`});
+    }
+  });
+  return qs;
+}
+
+function renderQuiz(){
+  const tab=document.getElementById('quiz-tab');
+  if(quizIndex>=quizQuestions.length){
+    const pct=Math.round((quizScore/quizQuestions.length)*100);
+    tab.innerHTML=`<div class="result-box">
+      <div class="score-big">${quizScore}/${quizQuestions.length}</div>
+      <h2>Quiz complete!</h2>
+      <p>${pct>=80?'Excellent! You know these words well.':pct>=60?'Good effort! Review the ones you missed.':'Keep studying — try the flashcards and come back!'}</p>
+      <button class="next-btn" onclick="restartQuiz()">Try again</button>
+    </div>`;
+    return;
+  }
+  const q=quizQuestions[quizIndex];
+  const prog=((quizIndex)/quizQuestions.length*100).toFixed(0);
+  tab.innerHTML=`
+    <div class="quiz-header">
+      <span class="quiz-score">Score: ${quizScore} / ${quizQuestions.length}</span>
+      <span class="quiz-score">Q${quizIndex+1} of ${quizQuestions.length}</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${prog}%"></div></div>
+    <div class="quiz-q">
+      <div class="qtype">${q.type==='def'?'Choose the correct definition':'Fill in the blank'}</div>
+      <div class="qtext">${q.type==='def'?`What does <strong>${q.word}</strong> mean?`:`Complete the sentence:<br><br>"${q.sentence}"`}</div>
+    </div>
+    <div class="choices">
+      ${q.choices.map(c=>`<button class="choice" onclick="answerQuiz(${JSON.stringify(c)}, this)">${c}</button>`).join('')}
+    </div>
+    <div id="feedback"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()" style="display:none">Next question →</button>`;
+}
+
+function answerQuiz(choice,btn){
+  if(quizAnswered) return;
+  quizAnswered=true;
+  const q=quizQuestions[quizIndex];
+  document.querySelectorAll('.choice').forEach(b=>b.disabled=true);
+  if(choice===q.correct){
+    btn.classList.add('correct');quizScore++;
+    document.getElementById('feedback').innerHTML=`<div class="feedback correct">✓ Correct! ${q.explanation}</div>`;
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.choice').forEach(b=>{if(b.textContent===q.correct)b.classList.add('correct');});
+    document.getElementById('feedback').innerHTML=`<div class="feedback wrong">✗ Not quite. ${q.explanation}</div>`;
+  }
+  document.getElementById('nextBtn').style.display='block';
+}
+
+function nextQuestion(){quizAnswered=false;quizIndex++;renderQuiz();}
+function restartQuiz(){quizQuestions=buildQuiz();quizIndex=0;quizScore=0;quizAnswered=false;renderQuiz();}
+
+renderGlossary();
+</script>
